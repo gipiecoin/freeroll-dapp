@@ -13,7 +13,7 @@ const BonusWheelModal = dynamic(() => import("../../components/BonusWheelModal")
 
 const FREEROLL_CONTRACT_ADDRESS = "0x6FEE10F6277FB77a2BE5d450a28aC9785EC128b0"; 
 const BONUS_WHEEL_CONTRACT_ADDRESS = "0xe1ED961c3Ab7D1E9c45ece28A3780Db889F6567E";
-const BINANCE_EXPLORER_URL = "https://bscscan.com/o/tx/";
+const BINANCE_EXPLORER_URL = "https://bscscan.com/tx/";
 const DAPPS_BASE_URL = "https://yourdapp.com";
 
 type RollHistoryEntry = { roll: number; payout: string; timestamp: number };
