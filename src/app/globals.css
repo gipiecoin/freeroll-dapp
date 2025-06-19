@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Anda bisa definisikan warna aksen untuk light mode juga di sini jika perlu */
+  --accent-primary: #0d9488; /* Teal lebih gelap untuk kontras di mode terang */
+  --accent-secondary: #7c3aed; /* Ungu lebih gelap untuk kontras di mode terang */
 }
 
 @theme inline {
@@ -14,13 +17,26 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0D1117; /* Latar belakang gelap yang kaya */
+    --foreground: #E5E7EB; /* Teks abu-abu terang */
+    --accent-primary: #2dd4bf; /* Teal terang */
+    --accent-secondary: #a78bfa; /* Ungu terang */
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans); /* Menggunakan font modern */
+  -webkit-font-smoothing: antialiased; /* Membuat font terlihat lebih halus */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Transisi global untuk semua elemen */
+*,
+*::before,
+*::after {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 }
