@@ -22,7 +22,7 @@ export const networks: NetworkConfig[] = [
     // It's highly recommended to replace this public RPC with a dedicated one from Alchemy or Infura for better performance on mainnet.
     rpcUrl: "https://bsc-dataseed.binance.org/",
     // IMPORTANT: Replace this placeholder with your NEWLY deployed Freeroll contract address on BSC.
-    contractAddress: "YOUR_NEW_FREEROLL_CONTRACT_ADDRESS_ON_BSC",
+    contractAddress: "0x6FEE10F6277FB77a2BE5d450a28aC9785EC128b0",
     explorerUrl: "https://bscscan.com/", // The base URL for the explorer
   },
 ];
