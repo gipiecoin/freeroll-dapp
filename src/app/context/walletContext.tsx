@@ -1,350 +1,93 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-  useCallback,
-} from "react";
-import { ethers } from "ethers";
+import React, { createContext, useContext, ReactNode, useMemo } from "react";
+import { useAccount, useBalance, useDisconnect, useChainId, useConnectorClient } from "wagmi";
+import { ethers, BrowserProvider } from "ethers";
+import type { Account, Chain, Client, Transport } from 'viem';
 
-// Import configurations from your project's config file
-import { networks, NetworkConfig, defaultNetwork } from "../../config/networks";
-import TesterABI from "../abi/TesterABI.json"; // Import your TesterABI for GIPIE token
+// --- Configuration from your project ---
+const GIPIE_TOKEN_ADDRESS = "0x03285a2F201AC1c00E51b77b0A55F139f3A7D591";
+// We assume the main target is BNB Smart Chain
+const TARGET_CHAIN_ID = 56;
 
-const GIPIE_TOKEN_ADDRESS = "0x03285a2F201AC1c00E51b77b0A55F139f3A7D591"; // Your Tester contract address for GIPIE token
+// --- Helper Function to convert wagmi client to ethers signer ---
+export function walletClientToSigner(walletClient: Client<Transport, Chain, Account>) {
+  const { account, chain, transport } = walletClient;
+  const network = {
+    chainId: chain.id,
+    name: chain.name,
+    ensAddress: chain.contracts?.ensRegistry?.address,
+  };
+  const provider = new BrowserProvider(transport, network);
+  const signer = new ethers.JsonRpcSigner(provider, account.address);
+  return signer;
+}
 
-// Define WalletContextType to include both GIPIE and ETH balances
+// --- Context Data Type (Mimicking your old structure) ---
 interface WalletContextType {
   connected: boolean;
   walletAddress: string;
-  balance: string; // Represents GIPIE balance
-  ethBalance: string; // Native ETH balance
-  connectWallet: () => Promise<void>;
+  balance: string;       // GIPIE balance
+  ethBalance: string;    // Native chain balance (BNB in this case)
+  connectWallet: () => void; // Will be an empty function, handled by RainbowKit
   disconnectWallet: () => void;
-  provider: ethers.BrowserProvider | null;
+  provider: ethers.BrowserProvider | null; // Kept for compatibility
   signer: ethers.JsonRpcSigner | null;
-  selectedNetwork: NetworkConfig;
-  setNetwork: (network: NetworkConfig) => Promise<void>;
+  // selectedNetwork and setNetwork are no longer needed, handled by RainbowKit
   walletReady: boolean;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [connected, setConnected] = useState<boolean>(false);
-  const [walletAddress, setWalletAddress] = useState<string>("");
-  const [balance, setBalance] = useState<string>("0.0"); // GIPIE Balance
-  const [ethBalance, setEthBalance] = useState<string>("0.0"); // Native ETH Balance
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(defaultNetwork);
-  const [walletReady, setWalletReady] = useState<boolean>(false);
+  // --- The New Core (Using Hooks from Wagmi) ---
+  const { address, isConnected, isConnecting, chain } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { data: walletClient } = useConnectorClient();
 
-  const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-  const LAST_CONNECTION_KEY = "lastWalletConnection";
+  // 1. Create signer & provider from wagmi (if connected)
+  const { signer, provider } = useMemo(() => {
+    if (!walletClient) return { signer: null, provider: null };
+    const newSigner = walletClientToSigner(walletClient);
+    const newProvider = newSigner.provider as BrowserProvider;
+    return { signer: newSigner, provider: newProvider };
+  }, [walletClient]);
 
-  const saveConnectionState = useCallback((address: string, chainId: string) => {
-    localStorage.setItem(
-      LAST_CONNECTION_KEY,
-      JSON.stringify({
-        address,
-        chainId,
-        timestamp: Date.now(),
-      })
-    );
-  }, []);
+  // 2. Determine connection status
+  const connected = isConnected && chain?.id === TARGET_CHAIN_ID;
+  const walletReady = !isConnecting; // Wallet is ready if it's not in the process of connecting
 
-  const clearConnectionState = useCallback(() => {
-    localStorage.removeItem(LAST_CONNECTION_KEY);
-  }, []);
+  // 3. Fetch balances (GIPIE and native) using wagmi
+  const { data: gipieBalanceData } = useBalance({
+    address,
+    token: GIPIE_TOKEN_ADDRESS,
+    query: { enabled: connected }, // Only fetch if connected on the correct network
+  });
 
-  const loadConnectionState = useCallback(() => {
-    try {
-      const stored = localStorage.getItem(LAST_CONNECTION_KEY);
-      if (stored) {
-        const { address, chainId, timestamp } = JSON.parse(stored);
-        if (Date.now() - timestamp < SESSION_DURATION_MS) {
-          return { address, chainId };
-        } else {
-          clearConnectionState();
-        }
-      }
-    } catch (error: unknown) {
-      console.error("Failed to load connection state:", error instanceof Error ? error.message : error);
-      clearConnectionState();
-    }
-    return null;
-  }, [clearConnectionState, SESSION_DURATION_MS]);
+  const { data: nativeBalanceData } = useBalance({
+    address,
+    query: { enabled: connected },
+  });
 
-  const connectWallet = async () => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        const browserProvider = new ethers.BrowserProvider(window.ethereum);
-        setProvider(browserProvider);
-
-        const accounts = await browserProvider.send("eth_requestAccounts", []);
-        if (accounts.length === 0) {
-          throw new Error("No accounts found. Please connect to MetaMask.");
-        }
-        const signerInstance = await browserProvider.getSigner();
-
-        setWalletAddress(accounts[0]);
-        setSigner(signerInstance);
-        setConnected(true);
-
-        const currentNetwork = await browserProvider.getNetwork();
-        const networkConfig = networks.find(
-          (net) => Number(net.chainId) === Number(currentNetwork.chainId)
-        );
-        if (networkConfig) {
-          setSelectedNetwork(networkConfig);
-        } else {
-          console.warn(`Connected to unsupported network: Chain ID ${currentNetwork.chainId}`);
-        }
-        saveConnectionState(accounts[0], String(currentNetwork.chainId));
-      } catch (error: unknown) {
-        console.error("Error connecting wallet:", error);
-        setConnected(false);
-        clearConnectionState();
-        if (error instanceof Error && "code" in error && error.code === 4001) {
-          console.log("Wallet connection rejected by user.");
-        } else {
-          console.error(`Connection failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-        }
-      }
-    } else {
-      console.warn("MetaMask is not installed. Please install it to use this dApp.");
-    }
-  };
-
-  const disconnectWallet = useCallback(() => {
-    setConnected(false);
-    setWalletAddress("");
-    setBalance("0.0");
-    setEthBalance("0.0");
-    setProvider(null);
-    setSigner(null);
-    clearConnectionState();
-  }, [clearConnectionState]);
-
-  // Function to fetch ERC20 token balance
-  const fetchgipieBalance = async (
-    currentProvider: ethers.BrowserProvider,
-    address: string
-  ) => {
-    try {
-      const tokenContract = new ethers.Contract(
-        GIPIE_TOKEN_ADDRESS,
-        TesterABI,
-        currentProvider
-      );
-      if (!tokenContract.balanceOf) {
-        throw new Error("Contract does not have balanceOf function. Check ABI or address.");
-      }
-      const tokenBalanceWei = await tokenContract.balanceOf(address);
-      return ethers.formatUnits(tokenBalanceWei, 18);
-    } catch (error: unknown) {
-      console.error("Error fetching GIPIE token balance:", error instanceof Error ? error.message : error);
-      return "0.0";
-    }
-  };
-
-  // Function to fetch native ETH balance
-  const fetchEthBalance = async (
-    currentProvider: ethers.BrowserProvider,
-    address: string
-  ) => {
-    try {
-      const nativeBalanceWei = await currentProvider.getBalance(address);
-      return ethers.formatEther(nativeBalanceWei);
-    } catch (error: unknown) {
-      console.error("Error fetching ETH balance:", error instanceof Error ? error.message : error);
-      return "0.0";
-    }
-  };
-
-  const setNetwork = async (network: NetworkConfig) => {
-    if (!window.ethereum) {
-      console.warn("MetaMask is not installed. Please install it to use this dApp.");
-      return;
-    }
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(Number(network.chainId)) }],
-      });
-      setSelectedNetwork(network);
-    } catch (switchError: unknown) {
-      console.error("Failed to switch network:", switchError);
-      if (
-        switchError instanceof Error &&
-        "code" in switchError &&
-        switchError.code === 4902
-      ) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: ethers.toBeHex(Number(network.chainId)),
-                chainName: network.name,
-                rpcUrls: [network.rpcUrl],
-                nativeCurrency: {
-                  name: "ETH",
-                  symbol: "ETH",
-                  decimals: 18,
-                },
-                blockExplorerUrls: [network.explorerUrl],
-              },
-            ],
-          });
-          await setNetwork(network);
-        } catch (addError: unknown) {
-          console.error("Failed to add network:", addError instanceof Error ? addError.message : addError);
-          console.error("Failed to add network to MetaMask. Please add it manually.");
-        }
-      } else {
-        console.error("Failed to switch network. Please try again.");
-      }
-    }
-  };
-
-  // Effect to handle initial connection attempt and event listeners
-  useEffect(() => {
-    if (typeof window.ethereum === "undefined") {
-      setWalletReady(true);
-      return;
-    }
-
-    const browserProvider = new ethers.BrowserProvider(window.ethereum);
-
-    const attemptAutoConnect = async () => {
-      const storedConnection = loadConnectionState();
-      if (storedConnection) {
-        try {
-          const accounts = await browserProvider.send("eth_accounts", []);
-          if (
-            accounts.length > 0 &&
-            accounts[0].toLowerCase() === storedConnection.address.toLowerCase()
-          ) {
-            const currentNetwork = await browserProvider.getNetwork();
-            if (String(currentNetwork.chainId) === storedConnection.chainId) {
-              setProvider(browserProvider);
-              setSigner(await browserProvider.getSigner());
-              setWalletAddress(accounts[0]);
-              setConnected(true);
-              const networkConfig = networks.find(
-                (net) => net.chainId === storedConnection.chainId
-              );
-              if (networkConfig) {
-                setSelectedNetwork(networkConfig);
-              }
-            } else {
-              console.warn("Stored network mismatch. Please switch to the correct network.");
-              clearConnectionState();
-            }
-          } else {
-            console.log("No active accounts or address mismatch. Requiring manual connect.");
-            clearConnectionState();
-          }
-        } catch (error: unknown) {
-          console.error("Error during auto-connect:", error instanceof Error ? error.message : error);
-          clearConnectionState();
-        }
-      }
-      setWalletReady(true);
-    };
-    attemptAutoConnect();
-
-    const handleAccountsChanged = async (accounts: string[]) => {
-      if (accounts.length === 0) {
-        disconnectWallet();
-      } else {
-        setWalletAddress(accounts[0]);
-        const currentSigner = await browserProvider.getSigner();
-        setSigner(currentSigner);
-        setConnected(true);
-        const currentNetwork = await browserProvider.getNetwork();
-        saveConnectionState(accounts[0], String(currentNetwork.chainId));
-      }
-    };
-
-    const handleChainChanged = async (chainId: string) => {
-      const newChainId = String(Number(chainId));
-      const networkConfig = networks.find((net) => net.chainId === newChainId);
-      if (networkConfig) {
-        setSelectedNetwork(networkConfig);
-        setProvider(browserProvider);
-        const currentSigner = await browserProvider.getSigner();
-        setSigner(currentSigner);
-        if (connected && walletAddress) {
-          saveConnectionState(walletAddress, newChainId);
-        }
-      } else {
-        console.warn(`Switched to unsupported network: Chain ID ${newChainId}`);
-        disconnectWallet();
-      }
-    };
-
-    window.ethereum.on("accountsChanged", handleAccountsChanged);
-    window.ethereum.on("chainChanged", handleChainChanged);
-
-    return () => {
-      if (window.ethereum.removeListener) {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
-      }
-    };
-  }, [connected, walletAddress, disconnectWallet, loadConnectionState, saveConnectionState, clearConnectionState]);
-
-  // Effect to update balances (both GIPIE and native ETH)
-  useEffect(() => {
-    const fetchAllBalances = async () => {
-      if (connected && provider && walletAddress) {
-        try {
-          // Fetch GIPIE token balance
-          const gipieBalance = await fetchgipieBalance(provider, walletAddress);
-          setBalance(gipieBalance);
-
-          // Fetch native ETH balance
-          const nativeEthBalance = await fetchEthBalance(provider, walletAddress);
-          setEthBalance(nativeEthBalance);
-        } catch (error: unknown) {
-          console.error("Error fetching balances:", error instanceof Error ? error.message : error);
-          setBalance("0.0");
-          setEthBalance("0.0");
-        }
-      } else {
-        setBalance("0.0");
-        setEthBalance("0.0");
-      }
-    };
-
-    if (connected && walletReady) {
-      fetchAllBalances();
-      const balanceInterval = setInterval(fetchAllBalances, 10000);
-      return () => clearInterval(balanceInterval);
-    } else {
-      setBalance("0.0");
-      setEthBalance("0.0");
-    }
-  }, [connected, provider, walletAddress, selectedNetwork, walletReady]);
-
-  const value = {
-    connected,
-    walletAddress,
-    balance,
-    ethBalance,
-    connectWallet,
-    disconnectWallet,
+  // --- Providing Data (Mimicking the Old Structure) ---
+  const value: WalletContextType = {
+    connected: !!connected, // Ensure it's a boolean
+    walletAddress: address || "",
+    balance: gipieBalanceData?.formatted || "0.0",
+    ethBalance: nativeBalanceData?.formatted || "0.0", // Native balance (BNB)
+    connectWallet: () => {
+      // This function no longer does anything, as it's handled by the RainbowKit button.
+      console.log("Please use the 'Connect Wallet' button provided by RainbowKit.");
+    },
+    disconnectWallet: () => {
+      // Call the disconnect function from wagmi
+      disconnect();
+    },
     provider,
     signer,
-    selectedNetwork,
-    setNetwork,
     walletReady,
+    // selectedNetwork and setNetwork are not included as they are handled by RainbowKit.
+    // However, if other components need them, they can be derived from wagmi's `chain` object.
   };
 
   return (

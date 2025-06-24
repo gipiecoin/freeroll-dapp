@@ -40,13 +40,16 @@ export default function Freeroll() {
   const [message, setMessage] = useState<string | null>(null);
   const [txStatus, setTxStatus] = useState<{ hash: string | null; status: "pending" | "success" | "failed" | null }>({ hash: null, status: null });
   const [showBonusGame, setShowBonusGame] = useState<boolean>(true);
+  const [openSection, setOpenSection] = useState<string | null>(null); // State untuk mengontrol akordeon "Your Recent Rolls"
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const rollAnimationRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Definisikan canRoll dan canSpin sebagai variabel berdasarkan state yang ada
   const canRoll = connected && !isLoading && !isProcessingTx && cooldownSeconds <= 0;
-  const canClaim = connected && !isLoading && !isProcessingTx && parseFloat(payout) > 0;
   const canSpin = isBonusEligible && !isProcessingTx && bonusPrizeIndex === null;
+
+  const canClaim = connected && !isLoading && !isProcessingTx && parseFloat(payout) > 0;
 
   const showMessage = useCallback((msg: string) => { setMessage(msg); setTimeout(() => setMessage(null), 3500); }, []);
   const formatTime = useCallback((seconds: number): string => { if (seconds <= 0) return "Ready!"; const h = Math.floor(seconds / 3600); const m = Math.floor((seconds % 3600) / 60); const s = Math.floor(seconds % 60); return `${h}h ${m}m ${s}s`; }, []);
@@ -273,7 +276,7 @@ export default function Freeroll() {
 
   const handleShareToX = useCallback(() => {
     if (lastRoll && parseFloat(payout) > 0) {
-      const tweetText = encodeURIComponent(`I rolled ${lastRoll.toString().padStart(5, "0")} & won ${payout} Gipiecoin on GIPIE Freeroll! 🍀 Try your luck:`);
+      const tweetText = encodeURIComponent(`I rolled ${lastRoll.toString().padStart(5, "0")} & won ${payout} Gipiecoin on GIPIE Freeroll! 🍀 Try your luck #binance #bsc #dapp #airdrop #airdrops #btc #eth #roll👉🏻:`);
       const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(DAPPS_BASE_URL + "/freeroll")}`;
       window.open(tweetUrl, "_blank");
     } else {
@@ -290,147 +293,158 @@ export default function Freeroll() {
         .animate-fade-in { animation: fade-in 0.3s ease-in; }
       `}</style>
 
-      <div className="bg-gray-800 bg-opacity-60 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl max-w-lg w-full text-white border border-gray-700">
-        <div className="text-center mb-6">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center mb-8">
           <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400 mb-2 drop-shadow-lg">Freeroll</h1>
           <p className="text-gray-300 text-lg">Roll every hour to win free GIPIE tokens!</p>
         </div>
 
-        <div className="mb-6">
-          <div className="overflow-hidden rounded-lg border border-gray-700 bg-gray-900/60 shadow-inner">
-            <table className="w-full text-sm text-left text-gray-300">
-              <thead className="text-xs text-teal-300 uppercase bg-gray-800/80">
-                <tr className="border-b border-gray-700/50">
-                  <th scope="col" className="px-4 py-2 font-semibold">Lucky Number</th>
-                  <th scope="col" className="px-4 py-2 font-semibold text-right">Payout (GIPIE)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { range: "10000", payout: "100", jackpot: true }, { range: "9998 - 9999", payout: "10" },
-                  { range: "9994 - 9997", payout: "1" }, { range: "9986 - 9993", payout: "0.1" },
-                  { range: "9886 - 9985", payout: "0.05" }, { range: "0 - 9885", payout: "0.01" },
-                ].map((tier) => (
-                  <tr key={tier.range} className={`border-b border-gray-700/50 last:border-b-0 ${tier.jackpot ? "bg-yellow-500/20" : "hover:bg-gray-700/50"}`}>
-                    <td className={`px-4 py-2 font-mono ${tier.jackpot ? "font-bold text-yellow-300" : ""}`}>
-                      {tier.range}
-                      {tier.jackpot && (<span className="ml-2 text-xs font-bold text-yellow-400 animate-pulse">[JACKPOT]</span>)}
-                    </td>
-                    <td className={`px-4 py-2 font-mono text-right ${tier.jackpot ? "font-bold text-yellow-300" : ""}`}>
-                      {tier.payout}
-                    </td>
+        <div className="bg-gray-800 bg-opacity-60 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg text-white border border-gray-700">
+          {/* Lucky Number Tiers (Static Display) */}
+          <div className="mb-6 border border-gray-700 rounded-lg overflow-hidden bg-gray-900/60">
+            <div className="p-4">
+              <table className="w-full text-sm text-left text-gray-300">
+                <thead className="text-xs text-teal-300 uppercase bg-gray-800/80">
+                  <tr className="border-b border-gray-700/50">
+                    <th scope="col" className="px-4 py-2 font-semibold">Lucky Number</th>
+                    <th scope="col" className="px-4 py-2 font-semibold text-right">Payout (GIPIE)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {lastRoll !== null && (
-          <div className="mb-6 p-5 bg-gradient-to-r from-purple-800 via-indigo-800 to-purple-800 rounded-lg shadow-lg text-center border border-purple-600">
-            <p className="text-sm text-purple-200">Your Last Roll</p>
-            <div className="text-4xl font-bold text-white my-1">
-              <span className="text-yellow-300 animate-pulse">
-                {isLoading || animatedRoll === null ? <SkeletonLoader className="h-10 w-32 mx-auto" /> : animatedRoll.toString().padStart(5, "0")}
-              </span>
-            </div>
-            {parseFloat(payout) > 0 ? (
-              <p className="text-lg font-semibold text-green-300 mb-3">You won <span className="font-bold">{payout} GIPIE</span>!</p>
-            ) : (
-              <p className="text-lg font-semibold text-gray-400 mb-3">No reward. Better luck next time!</p>
-            )}
-            {parseFloat(payout) > 0 && (<button onClick={handleShareToX} className="px-5 py-2 rounded-full text-white font-bold text-sm transition-all bg-sky-500 hover:bg-sky-600">Share on 𝕏</button>)}
-          </div>
-        )}
-
-        {rollHistory.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-300 mb-3 text-center">Your Recent Rolls</h3>
-            <div className="space-y-2 bg-gray-900/50 p-3 rounded-lg">
-              {rollHistory.map((entry) => (
-                <div key={entry.timestamp} className="flex justify-between items-center text-sm p-2 bg-gray-800 rounded-md">
-                  <span className="font-mono text-gray-400">Rolled: <span className="font-bold text-white">{entry.roll.toString().padStart(5, "0")}</span></span>
-                  <span className={`font-bold ${parseFloat(entry.payout) > 0 ? "text-green-400" : "text-gray-500"}`}>
-                    {parseFloat(entry.payout) > 0 ? `+${entry.payout} GIPIE` : "No Win"}
-                  </span>
-                </div>
-              ))}
+                </thead>
+                <tbody>
+                  {[
+                    { range: "10000", payout: "100", jackpot: true }, { range: "9998 - 9999", payout: "10" },
+                    { range: "9994 - 9997", payout: "1" }, { range: "9986 - 9993", payout: "0.1" },
+                    { range: "9886 - 9985", payout: "0.05" }, { range: "0 - 9885", payout: "0.01" },
+                  ].map((tier) => (
+                    <tr key={tier.range} className={`border-b border-gray-700/50 last:border-b-0 ${tier.jackpot ? "bg-yellow-500/20" : "hover:bg-gray-700/50"}`}>
+                      <td className={`px-4 py-2 font-mono ${tier.jackpot ? "font-bold text-yellow-300" : ""}`}>
+                        {tier.range}
+                        {tier.jackpot && (<span className="ml-2 text-xs font-bold text-yellow-400 animate-pulse">[JACKPOT]</span>)}
+                      </td>
+                      <td className={`px-4 py-2 font-mono text-right ${tier.jackpot ? "font-bold text-yellow-300" : ""}`}>
+                        {tier.payout}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
 
-        <div className="bg-gray-900/50 p-4 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between mb-4 text-lg">
-            <span className="font-medium text-gray-300">Next Roll In:</span>
-            <span className="font-bold text-yellow-300">{isLoading ? <SkeletonLoader className="h-6 w-28" /> : remainingTimeDisplay}</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button onClick={handleRoll} disabled={!canRoll} className="py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-blue-500 to-purple-600 text-white enabled:hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
-              {isProcessingTx ? "Processing..." : "ROLL!"}
-            </button>
-            <button onClick={handleClaim} disabled={!canClaim} className="py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-green-500 to-teal-500 text-white enabled:hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
-              {isProcessingTx ? "Processing..." : parseFloat(payout) > 0 ? `Claim ${payout} GIPIE` : "No Reward"}
-            </button>
-          </div>
-        </div>
-
-        {showBonusGame && (
-          <div className="mt-8 pt-6 border-t-2 border-dashed border-gray-700">
-            <h2 className="text-2xl font-bold text-center text-purple-400 mb-4">Daily Bonus Game</h2>
-            {isLoading ? <SkeletonLoader className="h-12 w-full" /> : (
-              <div className="mb-4">
-                <div className="flex justify-between mb-1">
-                  <span className="text-base font-medium text-purple-300">Bonus Spin Progress</span>
-                  {/* --- VISUAL CHANGE 1 --- */}
-                  <span className="text-sm font-medium text-purple-300">{dailyRollCount >= 10 ? "10/10" : `${dailyRollCount}/10`} Rolls</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2.5">
-                  {/* --- VISUAL CHANGE 2 --- */}
-                  <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(dailyRollCount, 10) / 10 * 100}%` }}></div>
-                </div>
-                {resetMessage && (
-                  <div className="mt-3 text-center text-sm text-purple-200 bg-purple-900/60 p-2 rounded-md border border-purple-800 animate-fade-in">
-                    <p>{resetMessage}</p>
-                  </div>
-                )}
-                {isBonusEligible && (
-                  <button onClick={() => setIsModalOpen(true)} className="mt-4 w-full py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 animate-fade-in" disabled={isProcessingTx}>
-                    {isProcessingTx ? "Processing..." : "Spin Bonus"}
-                  </button>
-                )}
+          {lastRoll !== null && (
+            <div className="mb-6 p-5 bg-gradient-to-r from-purple-800 via-indigo-800 to-purple-800 rounded-lg shadow-lg text-center border border-purple-600">
+              <p className="text-sm text-purple-200">Your Last Roll</p>
+              <div className="text-4xl font-bold text-white my-1">
+                <span className="text-yellow-300 animate-pulse">
+                  {isLoading || animatedRoll === null ? <SkeletonLoader className="h-10 w-32 mx-auto" /> : animatedRoll.toString().padStart(5, "0")}
+                </span>
               </div>
-            )}
-          </div>
-        )}
+              {parseFloat(payout) > 0 ? (
+                <p className="text-lg font-semibold text-green-300 mb-3">You won <span className="font-bold">{payout} GIPIE</span>!</p>
+              ) : (
+                <p className="text-lg font-semibold text-gray-400 mb-3">No reward. Better luck next time!</p>
+              )}
+              {parseFloat(payout) > 0 && (<button onClick={handleShareToX} className="px-5 py-2 rounded-full text-white font-bold text-sm transition-all bg-sky-500 hover:bg-sky-600">Share on 𝕏</button>)}
+            </div>
+          )}
 
-        {txStatus.hash && (
-          <div className="mt-6 p-4 bg-gray-900/70 rounded-lg text-center">
-            {txStatus.status === "pending" && <div className="flex items-center justify-center space-x-3 text-yellow-300"><svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span className="font-medium">Transaction Pending...</span></div>}
-            {txStatus.status === "success" && <div className="flex items-center justify-center space-x-3 text-green-400"><svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="font-medium">Transaction Successful!</span></div>}
-            {txStatus.status === "failed" && <div className="flex items-center justify-center space-x-3 text-red-500"><svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="font-medium">Transaction Failed.</span></div>}
-            <a href={`${BINANCE_EXPLORER_URL}${txStatus.hash}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-500 underline block mt-3 text-sm">View on Bscscan</a>
+          {/* Accordion for Roll History */}
+          {rollHistory.length > 0 && (
+            <div className="mb-6 border border-gray-700 rounded-lg overflow-hidden">
+              <button onClick={() => setOpenSection(openSection === "history" ? null : "history")} className="w-full p-4 bg-gray-800 bg-opacity-80 hover:bg-opacity-90 flex justify-between items-center text-left">
+                <span className="font-semibold text-teal-300">Your Recent Rolls</span>
+                <svg className={`h-5 w-5 text-gray-400 transition-transform ${openSection === "history" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openSection === "history" && (
+                <div className="p-4 bg-gray-900/50">
+                  <div className="space-y-2">
+                    {rollHistory.map((entry) => (
+                      <div key={entry.timestamp} className="flex justify-between items-center text-sm p-2 bg-gray-800 rounded-md">
+                        <span className="font-mono text-gray-400">Rolled: <span className="font-bold text-white">{entry.roll.toString().padStart(5, "0")}</span></span>
+                        <span className={`font-bold ${parseFloat(entry.payout) > 0 ? "text-green-400" : "text-gray-500"}`}>
+                          {parseFloat(entry.payout) > 0 ? `+${entry.payout} GIPIE` : "No Win"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="mb-6 bg-gray-900/50 p-4 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between mb-4 text-lg">
+              <span className="font-medium text-gray-300">Next Roll In:</span>
+              <span className="font-bold text-yellow-300">{isLoading ? <SkeletonLoader className="h-6 w-28" /> : remainingTimeDisplay}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={handleRoll} disabled={!canRoll} className="py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-blue-500 to-purple-600 text-white enabled:hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
+                {isProcessingTx ? "Processing..." : "ROLL!"}
+              </button>
+              <button onClick={handleClaim} disabled={!canClaim} className="py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-green-500 to-teal-500 text-white enabled:hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50">
+                {isProcessingTx ? "Processing..." : parseFloat(payout) > 0 ? `Claim ${payout} GIPIE` : "No Reward"}
+              </button>
+            </div>
+          </div>
+
+          {showBonusGame && (
+            <div className="mb-6 p-4 bg-purple-900/50 rounded-lg shadow-lg border border-purple-700">
+              <h2 className="text-2xl font-bold text-center text-purple-400 mb-4">Daily Bonus Game</h2>
+              {isLoading ? <SkeletonLoader className="h-12 w-full" /> : (
+                <div className="mb-4">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-base font-medium text-purple-300">Bonus Spin Progress</span>
+                    <span className="text-sm font-medium text-purple-300">{dailyRollCount >= 10 ? "10/10" : `${dailyRollCount}/10`} Rolls</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(dailyRollCount, 10) / 10 * 100}%` }}></div>
+                  </div>
+                  {resetMessage && (
+                    <div className="mt-3 text-center text-sm text-purple-200 bg-purple-900/60 p-2 rounded-md border border-purple-800 animate-fade-in">
+                      <p>{resetMessage}</p>
+                    </div>
+                  )}
+                  {isBonusEligible && (
+                    <button onClick={() => setIsModalOpen(true)} className="mt-4 w-full py-3 px-4 rounded-lg font-bold text-xl transition-all bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 animate-fade-in" disabled={isProcessingTx}>
+                      {isProcessingTx ? "Processing..." : "Spin Bonus"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {txStatus.hash && (
+            <div className="mt-6 p-4 bg-gray-900/70 rounded-lg text-center">
+              {txStatus.status === "pending" && <div className="flex items-center justify-center space-x-3 text-yellow-300"><svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span className="font-medium">Transaction Pending...</span></div>}
+              {txStatus.status === "success" && <div className="flex items-center justify-center space-x-3 text-green-400"><svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="font-medium">Transaction Successful!</span></div>}
+              {txStatus.status === "failed" && <div className="flex items-center justify-center space-x-3 text-red-500"><svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span className="font-medium">Transaction Failed.</span></div>}
+              <a href={`${BINANCE_EXPLORER_URL}${txStatus.hash}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-500 underline block mt-3 text-sm">View on Bscscan</a>
+            </div>
+          )}
+        </div>
+
+        <BonusWheelModal
+          isOpen={isModalOpen}
+          onClose={() => {
+              setIsModalOpen(false);
+              setBonusPrizeIndex(null);
+              checkStatus();
+          }}
+          onSpin={handleBonusSpin}
+          isProcessing={isProcessingTx}
+          prizeIndex={bonusPrizeIndex}
+          onClaim={handleBonusClaim}
+        />
+
+        {message && (
+          <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl border border-gray-700 z-50 animate-blur-fade">
+            <p className="text-base font-medium text-center">{message}</p>
           </div>
         )}
       </div>
-
-      <BonusWheelModal
-        isOpen={isModalOpen}
-        onClose={() => {
-            setIsModalOpen(false);
-            setBonusPrizeIndex(null);
-            checkStatus();
-        }}
-        onSpin={handleBonusSpin}
-        isProcessing={isProcessingTx}
-        prizeIndex={bonusPrizeIndex}
-        onClaim={handleBonusClaim}
-      />
-
-      {message && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl border border-gray-700 z-50 animate-blur-fade">
-          <p className="text-base font-medium text-center">{message}</p>
-        </div>
-      )}
     </div>
   );
 }

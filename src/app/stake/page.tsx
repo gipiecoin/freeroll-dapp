@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { useWallet } from "../context/walletContext";
 import GIPIE_ABI from "../abi/TesterABI.json";
 import StakingABI from "../abi/StakingABI.json";
+import { motion, AnimatePresence } from 'framer-motion'; // Added for animations
 
 // --- Configuration ---
 const GIPIE_TOKEN_ADDRESS = "0x03285a2f201ac1c00e51b77b0a55f139f3a7d591";
@@ -30,6 +31,25 @@ const SkeletonLoader = ({ className = "" }: { className?: string }) => (
     <div className={`bg-gray-700 animate-pulse rounded-md ${className}`} />
 );
 
+const LockIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+);
+
+const ChevronDownIcon = ({ isOpen }: { isOpen: boolean }) => (
+  <motion.svg key="chevron" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  </motion.svg>
+);
+
+// --- Staking Pools Data Structure ---
+const stakingPools = [
+  { id: 'gipie_staking', name: 'Gipie Staking Pool', description: 'Flexible & Fixed-Term Staking', active: true },
+  { id: 'gipie_lp_staking', name: 'GIPIE/BNB LP Staking', description: 'Stake LP tokens for higher rewards', apy: 'Coming Soon', active: false },
+  { id: 'gipie_partner_staking', name: 'Partner Token Staking', description: 'Stake other tokens to earn GIPIE', apy: 'Coming Soon', active: false },
+];
+
 // --- Main Component ---
 export default function Stake() {
     const { connected, provider, walletReady, balance: gipieBalance } = useWallet();
@@ -51,6 +71,7 @@ export default function Stake() {
     const [isProcessingTx, setIsProcessingTx] = useState<boolean>(false);
     const [message, setMessage] = useState<string | null>(null);
     const [txStatus, setTxStatus] = useState<{ hash: string | null; status: 'pending' | 'success' | 'failed' | null }>({ hash: null, status: null });
+    const [openAccordion, setOpenAccordion] = useState<string | null>(stakingPools[0].id); // State for accordion
 
     // --- Memoized & Derived Values ---
     const userGIPIEBalance = useMemo(() => parseFloat(gipieBalance || "0"), [gipieBalance]);
@@ -225,95 +246,126 @@ export default function Stake() {
         );
     };
 
+    const handleAccordionToggle = (id: string) => {
+        setOpenAccordion(openAccordion === id ? null : id);
+    };
+
     // --- Render ---
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center py-12 px-4">
             <style jsx>{` @keyframes blur-fade-in-out { 0% { opacity: 0; filter: blur(5px); transform: translateY(-20px); } 10% { opacity: 1; filter: blur(0); transform: translateY(0); } 90% { opacity: 1; filter: blur(0); transform: translateY(0); } 100% { opacity: 0; filter: blur(5px); transform: translateY(-20px); } } .animate-blur-fade { animation: blur-fade-in-out 3.5s ease-out forwards; } `}</style>
 
-            <div className="bg-gray-800 bg-opacity-60 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl max-w-md w-full text-white border border-gray-700">
-                <div className="text-center mb-6">
+            <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-8">
                     <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400 mb-2 drop-shadow-lg">
                         Stake GIPIE
                     </h1>
                     <p className="text-gray-300 text-lg">Lock tokens to earn passive rewards.</p>
                 </div>
-                
-                {/* Tab Navigation */}
-                <div className="mb-6 grid grid-cols-2 gap-2 bg-gray-900/50 p-1 rounded-lg">
-                    <button onClick={() => setView('stake')} disabled={hasActiveStake} className={`py-2 px-4 rounded-md font-semibold text-sm transition-all ${view === 'stake' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800/50'} disabled:opacity-50 disabled:cursor-not-allowed`}>Stake</button>
-                    <button onClick={() => setView('withdraw')} disabled={!hasActiveStake} className={`py-2 px-4 rounded-md font-semibold text-sm transition-all ${view === 'withdraw' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800/50'} disabled:opacity-50 disabled:cursor-not-allowed`}>My Stake</button>
-                </div>
 
-                {/* Main Content Area */}
-                <div>
-                    {view === 'stake' ? (
-                        <div className="space-y-6">
-                            <div className="flex justify-between items-center bg-gray-900/50 p-3 rounded-lg">
-                                <span className="text-sm font-medium text-gray-300">Your Balance</span>
-                                {isLoading ? <SkeletonLoader className="h-6 w-28" /> : <span className="font-bold text-lg text-white">{userGIPIEBalance.toFixed(4)} GIPIE</span>}
-                            </div>
-                           
-                            {/* --- MODIFIED SECTION START --- */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Amount to Stake</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={stakeAmount}
-                                        onChange={e => setStakeAmount(e.target.value)}
-                                        placeholder="0.0"
-                                        className="w-full bg-gray-900/70 border-2 border-gray-700 rounded-lg p-3 pr-20 text-white text-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                                    />
-                                    <button
-                                        onClick={() => setStakeAmount(userGIPIEBalance.toString())}
-                                        className="absolute top-1/2 right-2 transform -translate-y-1/2 py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-bold"
-                                    >
-                                        MAX
-                                    </button>
+                {stakingPools.map((pool) => (
+                    <div key={pool.id} className="border border-slate-700 rounded-2xl overflow-hidden mb-4">
+                        <button
+                            onClick={() => pool.active && handleAccordionToggle(pool.id)}
+                            disabled={!pool.active}
+                            className="w-full p-4 flex justify-between items-center bg-gray-800 bg-opacity-60 backdrop-blur-lg hover:bg-opacity-80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <div className="flex items-center text-left">
+                                <LockIcon />
+                                <div>
+                                    <h3 className="text-md font-semibold text-white">{pool.name}</h3>
+                                    <p className="text-sm text-slate-400">{pool.active ? pool.description : pool.apy}</p>
                                 </div>
                             </div>
-                            {/* --- MODIFIED SECTION END --- */}
+                            {pool.active && <ChevronDownIcon isOpen={openAccordion === pool.id} />}
+                        </button>
+                        
+                        <AnimatePresence initial={false}>
+                            {pool.active && openAccordion === pool.id && (
+                                <motion.div
+                                    key="content"
+                                    initial="collapsed"
+                                    animate="open"
+                                    exit="collapsed"
+                                    variants={{ open: { opacity: 1, height: 'auto' }, collapsed: { opacity: 0, height: 0 } }}
+                                    transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                    className="bg-gray-900/50"
+                                >
+                                    <div className="p-6">
+                                        <div className="mb-6 grid grid-cols-2 gap-2 bg-gray-900/50 p-1 rounded-lg">
+                                            <button onClick={() => setView('stake')} disabled={hasActiveStake} className={`py-2 px-4 rounded-md font-semibold text-sm transition-all ${view === 'stake' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800/50'} disabled:opacity-50 disabled:cursor-not-allowed`}>Stake</button>
+                                            <button onClick={() => setView('withdraw')} disabled={!hasActiveStake} className={`py-2 px-4 rounded-md font-semibold text-sm transition-all ${view === 'withdraw' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800/50'} disabled:opacity-50 disabled:cursor-not-allowed`}>My Stake</button>
+                                        </div>
 
-                            {!isStakeAmountValid && stakeAmount !== "" && <p className="text-red-400 text-xs mt-1">Invalid amount or exceeds balance.</p>}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Select Duration</label>
-                                <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
-                                    {Object.keys(APY_RATES).map(d => (
-                                        <button key={d} onClick={() => setSelectedDuration(Number(d))} className={`py-2 px-2 rounded-md font-semibold text-xs text-center transition-all ${selectedDuration === Number(d) ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-700 hover:bg-gray-600'}`}>{d} Days</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex justify-between items-center bg-gray-900/50 p-3 rounded-lg">
-                                <span className="text-sm font-medium text-gray-300">Estimated Reward</span>
-                                <span className="font-bold text-lg text-green-400">~{estimatedReward} GIPIE</span>
-                            </div>
-                            <button onClick={isApproved ? handleStake : handleApprove} disabled={isLoading || isProcessingTx || !isStakeAmountValid || (isApproved && !selectedDuration)} className="w-full py-3 rounded-lg font-bold text-xl transition-all duration-300 ease-in-out transform bg-gradient-to-r from-blue-500 to-purple-600 enabled:hover:scale-105 enabled:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:from-gray-600 disabled:to-gray-700">
-                                {isProcessingTx ? "Processing..." : isApproved ? "Stake Now" : "Approve GIPIE"}
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="text-center bg-gray-900/50 p-6 rounded-lg">
-                                <p className="text-sm font-medium text-gray-300">Amount Staked</p>
-                                {isLoading ? <SkeletonLoader className="h-10 w-48 mx-auto mt-2" /> : <p className="text-4xl font-bold text-purple-400 mt-1">{parseFloat(stakedAmount).toFixed(4)} GIPIE</p>}
-                            </div>
-                            <div className="text-center bg-gray-900/50 p-4 rounded-lg">
-                                <p className="text-sm font-medium text-gray-300">Time Remaining</p>
-                                {isLoading ? <SkeletonLoader className="h-8 w-32 mx-auto mt-2" /> : <p className="text-2xl font-bold text-yellow-300 mt-1">{remainingStakeTime}</p>}
-                            </div>
-                            {earlyWithdrawalInfo.isEarly && (
-                                <div className="text-center text-xs text-yellow-400 bg-yellow-900/30 border border-yellow-700/50 p-2 rounded-md">
-                                    Early withdrawal incurs a {PENALTY_RATE * 100}% penalty ({earlyWithdrawalInfo.penalty} GIPIE).
-                                </div>
+                                        {view === 'stake' ? (
+                                            <div className="space-y-6">
+                                                <div className="flex justify-between items-center bg-gray-900/50 p-3 rounded-lg">
+                                                    <span className="text-sm font-medium text-gray-300">Your Balance</span>
+                                                    {isLoading ? <SkeletonLoader className="h-6 w-28" /> : <span className="font-bold text-lg text-white">{userGIPIEBalance.toFixed(4)} GIPIE</span>}
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">Amount to Stake</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="number"
+                                                            value={stakeAmount}
+                                                            onChange={e => setStakeAmount(e.target.value)}
+                                                            placeholder="0.0"
+                                                            className="w-full bg-gray-900/70 border-2 border-gray-700 rounded-lg p-3 pr-20 text-white text-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                                                        />
+                                                        <button
+                                                            onClick={() => setStakeAmount(userGIPIEBalance.toString())}
+                                                            className="absolute top-1/2 right-2 transform -translate-y-1/2 py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-bold"
+                                                        >
+                                                            MAX
+                                                        </button>
+                                                    </div>
+                                                    {!isStakeAmountValid && stakeAmount !== "" && <p className="text-red-400 text-xs mt-1">Invalid amount or exceeds balance.</p>}
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Duration</label>
+                                                    <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
+                                                        {Object.keys(APY_RATES).map(d => (
+                                                            <button key={d} onClick={() => setSelectedDuration(Number(d))} className={`py-2 px-2 rounded-md font-semibold text-xs text-center transition-all ${selectedDuration === Number(d) ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-700 hover:bg-gray-600'}`}>{d} Days</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center bg-gray-900/50 p-3 rounded-lg">
+                                                    <span className="text-sm font-medium text-gray-300">Estimated Reward</span>
+                                                    <span className="font-bold text-lg text-green-400">~{estimatedReward} GIPIE</span>
+                                                </div>
+                                                <button onClick={isApproved ? handleStake : handleApprove} disabled={isLoading || isProcessingTx || !isStakeAmountValid || (isApproved && !selectedDuration)} className="w-full py-3 rounded-lg font-bold text-xl transition-all duration-300 ease-in-out transform bg-gradient-to-r from-blue-500 to-purple-600 enabled:hover:scale-105 enabled:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:from-gray-600 disabled:to-gray-700">
+                                                    {isProcessingTx ? "Processing..." : isApproved ? "Stake Now" : "Approve GIPIE"}
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="text-center bg-gray-900/50 p-6 rounded-lg">
+                                                    <p className="text-sm font-medium text-gray-300">Amount Staked</p>
+                                                    {isLoading ? <SkeletonLoader className="h-10 w-48 mx-auto mt-2" /> : <p className="text-4xl font-bold text-purple-400 mt-1">{parseFloat(stakedAmount).toFixed(4)} GIPIE</p>}
+                                                </div>
+                                                <div className="text-center bg-gray-900/50 p-4 rounded-lg">
+                                                    <p className="text-sm font-medium text-gray-300">Time Remaining</p>
+                                                    {isLoading ? <SkeletonLoader className="h-8 w-32 mx-auto mt-2" /> : <p className="text-2xl font-bold text-yellow-300 mt-1">{remainingStakeTime}</p>}
+                                                </div>
+                                                {earlyWithdrawalInfo.isEarly && (
+                                                    <div className="text-center text-xs text-yellow-400 bg-yellow-900/30 border border-yellow-700/50 p-2 rounded-md">
+                                                        Early withdrawal incurs a {PENALTY_RATE * 100}% penalty ({earlyWithdrawalInfo.penalty} GIPIE).
+                                                    </div>
+                                                )}
+                                                <button onClick={handleWithdraw} disabled={isLoading || isProcessingTx} className="w-full py-3 rounded-lg font-bold text-xl transition-all duration-300 ease-in-out transform bg-gradient-to-r from-red-600 to-orange-600 enabled:hover:scale-105 enabled:shadow-lg disabled:cursor-not-allowed disabled:opacity-50">
+                                                    {isProcessingTx ? "Withdrawing..." : "Withdraw"}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
                             )}
-                            <button onClick={handleWithdraw} disabled={isLoading || isProcessingTx} className="w-full py-3 rounded-lg font-bold text-xl transition-all duration-300 ease-in-out transform bg-gradient-to-r from-red-600 to-orange-600 enabled:hover:scale-105 enabled:shadow-lg disabled:cursor-not-allowed disabled:opacity-50">
-                                {isProcessingTx ? "Withdrawing..." : "Withdraw"}
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        </AnimatePresence>
+                    </div>
+                ))}
 
-                {/* RESTORED: Full transaction status display with icons */}
+                {/* Transaction Status Display */}
                 {txStatus.hash && (
                   <div className="mt-6 p-4 bg-gray-900/70 rounded-lg text-center">
                     {txStatus.status === "pending" && (
