@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useMemo } from "react";
-import { useAccount, useBalance, useDisconnect, useChainId, useConnectorClient } from "wagmi";
+import { useAccount, useBalance, useDisconnect, useConnectorClient } from "wagmi";
 import { ethers, BrowserProvider } from "ethers";
 import type { Account, Chain, Client, Transport } from 'viem';
 
@@ -47,10 +47,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // 1. Create signer & provider from wagmi (if connected)
   const { signer, provider } = useMemo(() => {
-    if (!walletClient) return { signer: null, provider: null };
-    const newSigner = walletClientToSigner(walletClient);
-    const newProvider = newSigner.provider as BrowserProvider;
-    return { signer: newSigner, provider: newProvider };
+    if (!walletClient) return { signer: null, provider: null }; // Ensure proper null initialization
+    try {
+      const newSigner = walletClientToSigner(walletClient);
+      const newProvider = newSigner.provider as BrowserProvider;
+      return { signer: newSigner, provider: newProvider };
+    } catch (error) {
+      console.error("Error creating signer/provider:", error);
+      return { signer: null, provider: null }; // Fallback to null if error occurs
+    }
   }, [walletClient]);
 
   // 2. Determine connection status
