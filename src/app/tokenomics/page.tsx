@@ -137,7 +137,7 @@ export default function Tokenomics() {
         </div>
 
         <div className="mt-12 flex justify-center space-x-4">
-          <SocialLink href="https://twitter.com/yourtwitter"><IconX /></SocialLink>
+          <SocialLink href="https://x.com/gipiecoin"><IconX /></SocialLink>
           <SocialLink href="https://t.me/yourtelegram"><IconTelegram /></SocialLink>
           <SocialLink href="mailto:your.email@example.com"><IconEmail /></SocialLink>
         </div>

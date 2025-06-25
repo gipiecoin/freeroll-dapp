@@ -276,7 +276,7 @@ export default function Freeroll() {
 
   const handleShareToX = useCallback(() => {
     if (lastRoll && parseFloat(payout) > 0) {
-      const tweetText = encodeURIComponent(`I rolled ${lastRoll.toString().padStart(5, "0")} & won ${payout} Gipiecoin on GIPIE Freeroll! 🍀 Try your luck #binance #bsc #dapp #airdrop #airdrops #btc #eth #roll👉🏻:`);
+      const tweetText = encodeURIComponent(`I rolled ${lastRoll.toString().padStart(5, "0")} & won ${payout} GIPIE on @gipiecoin Freeroll! 🍀 Try your luck #binance #bsc #dapp #airdrop #airdrops #btc #eth #roll👉🏻:`);
       const tweetUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(DAPPS_BASE_URL + "/freeroll")}`;
       window.open(tweetUrl, "_blank");
     } else {
