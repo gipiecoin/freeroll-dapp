@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'; // Added for accordion 
 // --- Configuration ---
 const CONTRACT_ADDRESS = "0x03285a2F201AC1c00E51b77b0A55F139f3A7D591"; 
 const BINANCE_EXPLORER_URL = "https://bscscan.com//tx/";
-const MIN_GIPIE_BALANCE_TO_CLAIM = 0.01; // Requirement is now for GIPIE
+const MIN_GIPIE_BALANCE_TO_CLAIM = 0.5; // Requirement is now for GIPIE
 
 // --- Small Reusable Components ---
 const SkeletonLoader = ({ className = "" }: { className?: string }) => (
