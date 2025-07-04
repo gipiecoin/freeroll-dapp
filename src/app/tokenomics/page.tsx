@@ -128,7 +128,7 @@ export default function Tokenomics() {
                 We are actively developing new features to enhance the GIPIE ecosystem. Here&apos;s what we are currently working on:
               </p>
               <ul className="space-y-4">
-                <ProgressBar label="New Games" percentage={10} />
+                <ProgressBar label="New Game" percentage={10} />
                 <ProgressBar label="GIPIE/BNB LP Staking" percentage={15} />
                 <ProgressBar label="Swap" percentage={5} />
               </ul>
@@ -138,8 +138,8 @@ export default function Tokenomics() {
 
         <div className="mt-12 flex justify-center space-x-4">
           <SocialLink href="https://x.com/gipiecoin"><IconX /></SocialLink>
-          <SocialLink href="https://t.me/yourtelegram"><IconTelegram /></SocialLink>
-          <SocialLink href="mailto:your.email@example.com"><IconEmail /></SocialLink>
+          <SocialLink href="https://t.me/gipiecoin"><IconTelegram /></SocialLink>
+          <SocialLink href="mailto:dev@gipiecoin.xyz"><IconEmail /></SocialLink>
         </div>
       </div>
     </div>
