@@ -355,17 +355,6 @@ export default function Freeroll() {
             </div>
           </div>
 
-          {/* Pending Rewards Display */}
-          <div className="mb-6 p-5 bg-gradient-to-r from-teal-800 via-cyan-800 to-teal-800 rounded-lg shadow-lg text-center border border-teal-600">
-            <p className="text-sm text-teal-200">Your Pending Rewards</p>
-            <div className="text-4xl font-bold text-white my-1">
-              <span className="text-green-300 animate-pulse">
-                {isLoading ? <SkeletonLoader className="h-10 w-32 mx-auto" /> : `${pendingRewards} GIPIE`}
-              </span>
-            </div>
-            <p className="text-lg font-semibold text-gray-300 mb-3">Accumulated from your rolls</p>
-          </div>
-
           {lastRoll !== null && (
             <div className="mb-6 p-5 bg-gradient-to-r from-purple-800 via-indigo-800 to-purple-800 rounded-lg shadow-lg text-center border border-purple-600">
               <p className="text-sm text-purple-200">Your Last Roll</p>
@@ -417,6 +406,17 @@ export default function Freeroll() {
               )}
             </div>
           )}
+
+          {/* Pending Rewards Display */}
+          <div className="mb-6 p-5 bg-gradient-to-r from-teal-800 via-cyan-800 to-teal-800 rounded-lg shadow-lg text-center border border-teal-600">
+            <p className="text-sm text-teal-200">Your Pending Rewards</p>
+            <div className="text-4xl font-bold text-white my-1">
+              <span className="text-green-300 animate-pulse">
+                {isLoading ? <SkeletonLoader className="h-10 w-32 mx-auto" /> : `${pendingRewards} GIPIE`}
+              </span>
+            </div>
+            <p className="text-lg font-semibold text-gray-300 mb-3">Accumulated from your rolls</p>
+          </div>
 
           <div className="mb-6 bg-gray-900/50 p-4 rounded-lg shadow-lg">
             <div className="flex items-center justify-between mb-4 text-lg">
@@ -510,7 +510,7 @@ export default function Freeroll() {
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-500 underline block mt-3 text-sm"
               >
-                View on Etherscan
+                View on BSCscan
               </a>
             </div>
           )}
