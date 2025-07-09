@@ -336,6 +336,90 @@ export default function Home() {
 
         <hr className="my-16 border-slate-700/60" />
 
+        {/* About GipieCoin Section */}
+        <div className="w-full">
+          <motion.h2
+            className="text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-green-400 mb-10 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 2.0 }}
+          >
+            About GipieCoin
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <GenericInfoCard
+              title="What is GipieCoin (GIPIE)?"
+              description="GipieCoin (GIPIE) is a revolutionary cryptocurrency built on the Binance Smart Chain (BEP-20). Our core mission is to make crypto accessible and rewarding for everyone, regardless of their prior experience. We believe in financial inclusion through fun and risk-free earning opportunities. GipieCoin acts as the native utility token, powering all interactive features and rewards in our growing ecosystem."
+              delay={2.2}
+            />
+            <GenericInfoCard
+              title="Key Details"
+              description={
+                <span>
+                  <strong>Token Name:</strong> GipieCoin<br />
+                  <strong>Token Symbol:</strong> GIPIE<br />
+                  <strong>Total Supply:</strong> Unlimited<br />
+                  <strong>Blockchain:</strong> Binance Smart Chain (BSC) / BEP-20<br />
+                  <strong>Primary Use Case:</strong> Earning rewards through Freeroll and Daily Claim, staking for passive income, and community participation.<br />
+                  <strong>Current Phase:</strong> Actively developing and expanding a rewarding ecosystem for our community
+                </span>
+              }
+              delay={2.4}
+            />
+          </div>
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 2.6 }}
+          >
+            <a
+              href="/tokenomics"
+              className="px-8 py-3 rounded-lg font-bold text-lg text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300/50 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+            >
+              Read Our Tokenomics Here
+            </a>
+          </motion.div>
+        </div>
+
+        <hr className="my-16 border-slate-700/60" />
+
+        {/* Roadmap Section (Moved to Below About GipieCoin) */}
+        <div className="w-full">
+          <motion.h2
+            className="text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-10 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 3.8 }}
+          >
+            Roadmap
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <GenericInfoCard
+              title="Q3 2025"
+              description="Launch the Game feature with Freeroll, along with staking and daily claim to enhance user engagement. (Currently in progress as of July 2025)"
+              delay={4.0}
+            />
+            <GenericInfoCard
+              title="Q4 2025"
+              description="Introduce the token swap feature and launch new features to improve functionality and user experience."
+              delay={4.2}
+            />
+            <GenericInfoCard
+              title="Q1 2026"
+              description="Coming Soon..."
+              delay={4.4}
+            />
+            <GenericInfoCard
+              title="Q2 2026"
+              description="Coming Soon..."
+              delay={4.6}
+            />
+          </div>
+        </div>
+
+        <hr className="my-16 border-slate-700/60" />
+
         {/* Feature Cards Section */}
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
           <FeatureCard
@@ -384,90 +468,6 @@ export default function Home() {
 
         <hr className="my-16 border-slate-700/60" />
 
-        {/* About GipieCoin Section */}
-        <div className="w-full">
-          <motion.h2
-            className="text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-green-400 mb-10 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 2.0 }}
-          >
-            About GipieCoin
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <GenericInfoCard
-              title="What is GipieCoin (GIPIE)?"
-              description="GipieCoin (GIPIE) is a revolutionary cryptocurrency built on the Binance Smart Chain (BEP-20). Our core mission is to make crypto accessible and rewarding for everyone, regardless of their prior experience. We believe in financial inclusion through fun and risk-free earning opportunities. GipieCoin acts as the native utility token, powering all interactive features and rewards in our growing ecosystem."
-              delay={2.2}
-            />
-            <GenericInfoCard
-              title="Key Details"
-              description={
-                <span>
-                  <strong>Token Name:</strong> GipieCoin<br />
-                  <strong>Token Symbol:</strong> GIPIE<br />
-                  <strong>Total Supply:</strong> Unlimited<br />
-                  <strong>Blockchain:</strong> Binance Smart Chain (BSC) / BEP-20<br />
-                  <strong>Primary Use Case:</strong> Earning rewards through Freeroll and Daily Claim, staking for passive income, and community participation.<br />
-                  <strong>Current Phase:</strong> Actively developing and expanding a rewarding ecosystem for our community
-                </span>
-              }
-              delay={2.4}
-            />
-          </div>
-          <motion.div
-            className="mt-12 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 2.6 }}
-          >
-            <a
-              href="/tokenomics"
-              className="px-8 py-3 rounded-lg font-bold text-lg text-white bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300/50 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
-            >
-            Read Our Tokenomics Here
-            </a>
-          </motion.div>
-        </div>
-
-        <hr className="my-16 border-slate-700/60" />
-
-        {/* Roadmap Section */}
-        <div className="w-full">
-          <motion.h2
-            className="text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-10 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 3.8 }}
-          >
-            Roadmap
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <GenericInfoCard
-              title="Q3 2025"
-              description="Launch the Game feature with Freeroll, along with staking and daily claim to enhance user engagement. (Currently in progress as of July 2025)"
-              delay={4.0}
-            />
-            <GenericInfoCard
-              title="Q4 2025"
-              description="Introduce the token swap feature and launch new features to improve functionality and user experience."
-              delay={4.2}
-            />
-            <GenericInfoCard
-              title="Q1 2026"
-              description="Coming Soon..."
-              delay={4.4}
-            />
-            <GenericInfoCard
-              title="Q2 2026"
-              description="Coming Soon..."
-              delay={4.6}
-            />
-          </div>
-        </div>
-
-        <hr className="my-16 border-slate-700/60" />
-
         {/* FAQ Section */}
         <div className="w-full">
           <motion.h2
@@ -481,7 +481,7 @@ export default function Home() {
           <div className="space-y-4">
             <FAQItem
               question="How do I get started with GipieCoin?"
-              answer="Connect your BSC-compatible Web3 wallet (like MetaMask) to our platform. Navigate to the 'Game' section to start earning GIPIE tokens instantly with Freeroll. No initial deposit is required!"
+              answer="Connect your BSC-compatible Web3 wallet (like MetaMask) to our platform. Navigate to the 'Game' section to start cambrian earning GIPIE tokens instantly with Freeroll. No initial deposit is required!"
               delay={5.4}
             />
             <FAQItem
