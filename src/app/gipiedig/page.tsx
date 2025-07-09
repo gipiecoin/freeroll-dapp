@@ -184,15 +184,15 @@ const GameContent = () => {
             } catch (error) {
                 const err = error as EthersError;
                 setTxStatus({ hash: err.transactionHash || null, status: "failed" });
-                let errorMessage = err.message || failureMsg;
+                let errorMessage = failureMsg;
                 if (
                     (typeof err.code === "string" && err.code === "ACTION_REJECTED") ||
                     (typeof err.code === "number" && (err.code === 4001 || err.code === 5001)) ||
                     (err.message && (err.message.toLowerCase().includes("rejected") || err.message.toLowerCase().includes("cancelled") || err.message.toLowerCase().includes("user denied")))
                 ) {
-                    errorMessage = "Rejected by user";
-                } else if (err.message && !errorMessage.includes(failureMsg)) {
-                    errorMessage = `${failureMsg}: ${err.message}`;
+                    errorMessage = "Canceled";
+                } else {
+                    errorMessage = "Failed";
                 }
                 showMessage(errorMessage);
                 console.error("Transaction Error:", {

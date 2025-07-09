@@ -31,7 +31,6 @@ const ExternalLinkIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" f
 const LogoutIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
 const ChevronDownIcon = () => <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>;
 
-
 // --- Wallet Panel Sub-components ---
 const WalletPanelHeader = ({ onClose }: { onClose: () => void }) => (
   <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
@@ -39,7 +38,7 @@ const WalletPanelHeader = ({ onClose }: { onClose: () => void }) => (
       <h3 className="text-lg font-semibold text-white">Wallet</h3>
       <p className="text-sm text-slate-400">BNB Smart Chain Network</p>
     </div>
-    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-full sm:hidden">
+    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-full">
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
     </button>
   </div>
@@ -88,7 +87,6 @@ const ActionButtons = ({ address, onDisconnect }: { address: string; onDisconnec
     </button>
   </div>
 );
-
 
 export default function Header() {
   const { walletAddress, balance, ethBalance, disconnectWallet } = useWallet();
