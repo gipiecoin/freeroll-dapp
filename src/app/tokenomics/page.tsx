@@ -102,12 +102,11 @@ export default function Tokenomics() {
               Our initial mint yielded 1 million GIPIE, allocated as follows to maintain a balanced ecosystem economy:
             </p>
             <ul className="list-disc pl-5 space-y-2 text-gray-200">
-              <li>40% - Staking Rewards, encouraging long-term participation.</li>
-              <li>20% - Community Freeroll prizes.</li>
-              <li>10% - Community free spins.</li>
-              <li>10% - Weekly Giveaways.</li>
-              <li>10% - Liquidity Provision.</li>
-              <li>10% - Operations and Development, supporting project growth.</li>
+              <li>50% - Distributed to our loyal users, especially active players in games on our site.</li>
+              <li>20% - Distributed as Staking rewards to encourage long-term participation.</li>
+              <li>15% - Distributed for DEX liquidity provision or CEX promotions.</li>
+              <li>10% - Distributed for Operations and Development, supporting project growth.</li>
+              <li> 5% - Distributed for Bounty and Airdrop events.</li>
             </ul>
           </AccordionSection>
 

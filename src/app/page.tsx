@@ -360,7 +360,7 @@ export default function Home() {
                   <strong>Token Symbol:</strong> GIPIE<br />
                   <strong>Total Supply:</strong> Unlimited<br />
                   <strong>Blockchain:</strong> Binance Smart Chain (BSC) / BEP-20<br />
-                  <strong>Primary Use Case:</strong> Earning rewards through Freeroll and Daily Claim, staking for passive income, and community participation.<br />
+                  <strong>Primary Use Case:</strong> Earning rewards through Free Play and Daily Claim, staking for passive income, and community participation.<br />
                   <strong>Current Phase:</strong> Actively developing and expanding a rewarding ecosystem for our community
                 </span>
               }
@@ -397,7 +397,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <GenericInfoCard
               title="Q3 2025"
-              description="Launch the Game feature with Freeroll, along with staking and daily claim to enhance user engagement. (Currently in progress as of July 2025)"
+              description="Launch more free games, along with staking and daily claims, to increase real user engagement. (Currently in progress as of July 2025)"
               delay={4.0}
             />
             <GenericInfoCard
@@ -431,8 +431,8 @@ export default function Home() {
                 <div className="particle" style={{ top: "50%", left: "50%" }} />
               </div>
             }
-            title="Freeroll Game"
-            description="Roll every hour to earn free GIPIE and crypto. Unlock bonus spins for a chance to win real USDC rewards."
+            title="Free Play Game"
+            description="Play every day to earn free GIPIE and crypto. Unlock bonus spins for a chance to win real USDC rewards."
             delay={1.4}
             href="/game"
           />
@@ -481,12 +481,12 @@ export default function Home() {
           <div className="space-y-4">
             <FAQItem
               question="How do I get started with GipieCoin?"
-              answer="Connect your BSC-compatible Web3 wallet (like MetaMask) to our platform. Navigate to the 'Game' section to start cambrian earning GIPIE tokens instantly with Freeroll. No initial deposit is required!"
+              answer="Connect your BSC-compatible Web3 wallet (like MetaMask) to our platform. Navigate to the 'Game' section to start earning GIPIE tokens instantly with Free Play. No initial deposit is required!"
               delay={5.4}
             />
             <FAQItem
               question="Is GipieCoin truly free to earn?"
-              answer="Yes, GipieCoin offers free earning opportunities through the Game (Freeroll) and Daily Claim features. These allow anyone to participate and earn crypto without upfront investment. USDC rewards are also available for bonus spins."
+              answer="Yes, GipieCoin offers free earning opportunities through the Game (Free Play) and Daily Claim features. These allow anyone to participate and earn crypto without upfront investment. USDC rewards are also available for bonus spins."
               delay={5.6}
             />
             <FAQItem
