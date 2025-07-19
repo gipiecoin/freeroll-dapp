@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'; // Added for accordion 
 
 // --- Configuration ---
 const CONTRACT_ADDRESS = "0x03285a2F201AC1c00E51b77b0A55F139f3A7D591"; 
-const BINANCE_EXPLORER_URL = "https://bscscan.com//tx/";
+const BINANCE_EXPLORER_URL = "https://bscscan.com/tx/";
 const MIN_GIPIE_BALANCE_TO_CLAIM = 0.5; // Requirement is now for GIPIE
 
 // --- Small Reusable Components ---
@@ -284,8 +284,7 @@ export default function ClaimDaily() {
                                         disabled={isProcessingTx || isLoading || !canClaimDerived || !hasMinGipieForClaim}
                                         className="w-full py-3 rounded-lg font-bold text-xl transition-all duration-300 ease-in-out transform bg-gradient-to-r from-green-500 to-teal-500 enabled:hover:scale-105 enabled:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        {isProcessingTx ? "Processing..." : 
-                                         !connected ? "Connect Wallet" :
+                                        {isProcessingTx ? "Processing..." :
                                          isLoading ? "Loading Status..." :
                                          contractLocked ? "Contract Locked" :
                                          !hasMinGipieForClaim ? `Need ${MIN_GIPIE_BALANCE_TO_CLAIM} GIPIE` :
