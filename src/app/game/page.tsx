@@ -1,4 +1,3 @@
-// src/app/game/page.tsx
 "use client";
 
 import React from "react";
@@ -19,6 +18,18 @@ const GamePage = () => {
       name: "Freeroll",
       color: "from-blue-500 to-cyan-500",
       path: "../freeroll",
+    },
+    {
+      id: "spin_game",
+      name: "Spin",
+      color: "from-purple-500 to-pink-500",
+      path: "../spin",
+    },
+    {
+      id: "crypto_card_flip",
+      name: "Crypto Card Flip",
+      color: "from-yellow-500 to-orange-500",
+      path: "../crypto-card-flip",
     },
   ];
 

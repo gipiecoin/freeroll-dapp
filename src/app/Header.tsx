@@ -128,7 +128,7 @@ export default function Header() {
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               <Link href="/game" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Game</Link>
-              <Link href="/claimdaily" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Daily Claim</Link>
+              <Link href="/claim" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Daily Claim</Link>
               <Link href="/stake" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Stake</Link>
               <Link href="/tokenomics" className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">Tokenomics</Link>
             </nav>
@@ -142,7 +142,7 @@ export default function Header() {
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-full left-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-2 z-20">
                     <nav className="flex flex-col">
                       <Link href="/game" onClick={() => setIsNavOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 hover:text-white">Game</Link>
-                      <Link href="/claimdaily" onClick={() => setIsNavOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 hover:text-white">Daily Claim</Link>
+                      <Link href="/claim" onClick={() => setIsNavOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 hover:text-white">Daily Claim</Link>
                       <Link href="/stake" onClick={() => setIsNavOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 hover:text-white">Stake</Link>
                       <Link href="/tokenomics" onClick={() => setIsNavOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:bg-slate-700 hover:text-white">Tokenomics</Link>
                     </nav>
